@@ -19,6 +19,7 @@
 - ✅ `QueryRegistry.sol` - Query tracking on-chain
 - ✅ `AgentRegistry.sol` - Agent identity & reputation
 - ✅ Deployed to Avalanche Fuji testnet
+- ✅ Test suite complete (29 tests passing)
 
 #### Contract Addresses
 
@@ -26,6 +27,13 @@
 | ------------- | -------------------------------------------- |
 | QueryRegistry | `0x254099809Aa6D702A7dBe17180629d7BBA6548e2` |
 | AgentRegistry | `0x5424d6482fA1EF5378b927fC6606ED27318A1F30` |
+
+#### Test Coverage
+
+| Contract      | Tests | Status         |
+| ------------- | ----- | -------------- |
+| QueryRegistry | 11    | ✅ All passing |
+| AgentRegistry | 18    | ✅ All passing |
 
 ### Resources
 
@@ -55,6 +63,9 @@ packages/contracts/
 │   ├── QueryRegistry.sol ✅
 │   └── AgentRegistry.sol ✅
 ├── script/Deploy.s.sol ✅
+├── test/
+│   ├── QueryRegistry.t.sol ✅
+│   └── AgentRegistry.t.sol ✅
 └── contract-addresses.json ✅
 ```
 
