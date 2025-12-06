@@ -15,6 +15,7 @@ export const QueryTypeSchema = z.enum([
   "news",
   "portfolio",
   "social",
+  "risk",
 ]);
 export type QueryType = z.infer<typeof QueryTypeSchema>;
 

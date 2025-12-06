@@ -105,15 +105,27 @@ Respond ONLY with valid JSON in this exact format:
 Market Data:
 {data}`,
 
-  price: `You are a crypto price analyst. Based on this price data, provide a brief analysis.
+  price: `You are a crypto price prediction analyst. Based on this historical price data and technical indicators, provide:
+1. Price target for the specified timeframe
+2. Direction (bullish/bearish/neutral)
+3. Confidence score (0-100)
+4. Key signals influencing the prediction
 
 Respond ONLY with valid JSON:
 {
-  "sentiment": {"score": number, "trend": "bullish"|"bearish"|"neutral", "summary": "string"},
-  "factors": ["string"]
+  "prediction": {
+    "targetPrice": number,
+    "direction": "bullish"|"bearish"|"neutral",
+    "confidence": number,
+    "timeframe": "24h"|"7d"|"30d"
+  },
+  "signals": [
+    {"indicator": "string", "value": "string", "impact": "positive"|"negative"}
+  ],
+  "context": "string (2-3 sentence summary)"
 }
 
-Price Data:
+Historical Data:
 {data}`,
 
   news: `You are a crypto news analyst. Summarize the sentiment from these news items.
@@ -138,15 +150,48 @@ Respond ONLY with valid JSON:
 Portfolio Data:
 {data}`,
 
-  social: `You are a crypto social sentiment analyst. Analyze social media sentiment.
+  social: `You are a crypto social sentiment analyst. Analyze social media data and provide:
+1. Sentiment score (0-100)
+2. Trend direction
+3. Volume level (low/medium/high)
+4. Trending topics and any warnings
 
 Respond ONLY with valid JSON:
 {
-  "sentiment": {"score": number, "trend": "bullish"|"bearish"|"neutral", "summary": "string"},
-  "factors": ["string", "string"]
+  "sentiment": {"score": number, "trend": "bullish"|"bearish"|"neutral", "volume": "low"|"medium"|"high"},
+  "trending": [{"topic": "string", "mentions": number, "sentiment": "string"}],
+  "summary": "string",
+  "warnings": ["string"]
 }
 
 Social Data:
+{data}`,
+
+  risk: `You are a blockchain risk analyst. Analyze this wallet/transaction data for suspicious patterns and provide:
+1. Risk score (0-100, where 100 is highest risk)
+2. Risk level (low/medium/high/critical)
+3. Specific risk factors identified
+4. Recommendation for the user
+
+Respond ONLY with valid JSON:
+{
+  "risk": {
+    "score": number,
+    "level": "low"|"medium"|"high"|"critical",
+    "confidence": number
+  },
+  "factors": [
+    {"type": "string", "severity": "low"|"medium"|"high", "description": "string"}
+  ],
+  "recommendation": "string",
+  "metadata": {
+    "walletAge": "string",
+    "txCount": number,
+    "totalVolume": "string"
+  }
+}
+
+Wallet/Transaction Data:
 {data}`,
 };
 
@@ -225,7 +270,7 @@ export class AIService {
   }
 
   /**
-   * Parse JSON response from AI
+   * Parse JSON response from AI - returns raw parsed JSON with tokensUsed
    */
   private parseResponse(response: string): MarketSentiment {
     try {
@@ -237,22 +282,26 @@ export class AIService {
 
       const parsed = JSON.parse(jsonMatch[0]);
 
-      // Validate structure
-      if (!parsed.sentiment || typeof parsed.sentiment.score !== "number") {
-        throw new Error("Invalid response structure");
+      // Add tokensUsed to the response
+      parsed.tokensUsed = 0;
+
+      // For market/sentiment format, validate and normalize
+      if (parsed.sentiment && typeof parsed.sentiment.score === "number") {
+        return {
+          sentiment: {
+            score: Math.min(100, Math.max(0, parsed.sentiment.score)),
+            trend: parsed.sentiment.trend || "neutral",
+            summary: parsed.sentiment.summary || "",
+          },
+          factors: Array.isArray(parsed.factors)
+            ? parsed.factors.slice(0, 3)
+            : [],
+          tokensUsed: 0,
+        };
       }
 
-      return {
-        sentiment: {
-          score: Math.min(100, Math.max(0, parsed.sentiment.score)),
-          trend: parsed.sentiment.trend || "neutral",
-          summary: parsed.sentiment.summary || "",
-        },
-        factors: Array.isArray(parsed.factors)
-          ? parsed.factors.slice(0, 3)
-          : [],
-        tokensUsed: 0, // Will be updated with actual usage
-      };
+      // For other types (price, risk, social), return parsed JSON directly
+      return parsed as MarketSentiment;
     } catch (error) {
       throw new AIServiceError("Failed to parse AI response", {
         response,

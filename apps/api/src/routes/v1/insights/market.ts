@@ -7,6 +7,7 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { keccak256, toHex, type Address } from "viem";
 import { x402Middleware } from "../../../middleware/x402.js";
+import { x402RealPayment } from "../../../middleware/x402-real.js";
 import { aiService } from "../../../services/ai.js";
 import {
   aggregateMarketData,
@@ -36,13 +37,20 @@ const MarketRequestSchema = z.object({
 
 const router = Router();
 
+// Dynamic middleware selection based on PAYMENT_MODE (checked at runtime)
+function getPaymentMiddleware() {
+  const mode = process.env.PAYMENT_MODE || "signature";
+  console.log(`💳 Payment mode: ${mode}`);
+  return mode === "real" ? x402RealPayment("market") : x402Middleware("market");
+}
+
 /**
  * POST /market
  * Get AI-powered market sentiment analysis
  */
 router.post(
   "/market",
-  x402Middleware("market"),
+  (req, res, next) => getPaymentMiddleware()(req, res, next),
   async (req: Request, res: Response) => {
     try {
       // 1. Validate request body

@@ -13,6 +13,9 @@ dotenv.config();
 
 // Import routes
 import marketRouter from "./routes/v1/insights/market.js";
+import priceRouter from "./routes/v1/insights/price.js";
+import riskRouter from "./routes/v1/insights/risk.js";
+import socialRouter from "./routes/v1/insights/social.js";
 
 // Initialize Express
 const app = express();
@@ -53,13 +56,19 @@ app.get("/", (req, res) => {
     description: "Pay-per-query data insights for AI agents",
     endpoints: {
       health: "GET /health",
-      market: "POST /api/v1/insights/market",
+      market: "POST /api/v1/insights/market ($0.02)",
+      price: "POST /api/v1/insights/price ($0.03)",
+      risk: "POST /api/v1/insights/risk ($0.05)",
+      social: "POST /api/v1/insights/social ($0.02)",
     },
   });
 });
 
 // Insights API
 app.use("/api/v1/insights", marketRouter);
+app.use("/api/v1/insights", priceRouter);
+app.use("/api/v1/insights", riskRouter);
+app.use("/api/v1/insights", socialRouter);
 
 // =============================================================================
 // ERROR HANDLING
@@ -113,7 +122,10 @@ app.listen(PORT, () => {
   console.log(`  Env:     ${process.env.NODE_ENV || "development"}`);
   console.log("  Routes:");
   console.log("    - GET  /health");
-  console.log("    - POST /api/v1/insights/market");
+  console.log("    - POST /api/v1/insights/market ($0.02)");
+  console.log("    - POST /api/v1/insights/price ($0.03)");
+  console.log("    - POST /api/v1/insights/risk ($0.05)");
+  console.log("    - POST /api/v1/insights/social ($0.02)");
   console.log("═══════════════════════════════════════════════════");
   console.log("");
 });

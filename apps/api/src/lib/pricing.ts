@@ -22,9 +22,9 @@ const PRICING: Record<QueryType, PriceConfig> = {
     maxPrice: 0.1,
   },
   price: {
-    basePrice: 0.01,
-    tokenMultiplier: 0.000005,
-    maxPrice: 0.05,
+    basePrice: 0.03, // Higher due to historical data
+    tokenMultiplier: 0.00001,
+    maxPrice: 0.15,
   },
   news: {
     basePrice: 0.03,
@@ -40,6 +40,11 @@ const PRICING: Record<QueryType, PriceConfig> = {
     basePrice: 0.02,
     tokenMultiplier: 0.00001,
     maxPrice: 0.08,
+  },
+  risk: {
+    basePrice: 0.05, // Higher due to on-chain data
+    tokenMultiplier: 0.00002,
+    maxPrice: 0.2,
   },
 };
 
