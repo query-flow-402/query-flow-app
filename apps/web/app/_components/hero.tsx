@@ -1,8 +1,15 @@
 "use client";
 
 import { ArrowRight, ExternalLink, Zap, Shield, Globe } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function Hero() {
+  const router = useRouter();
+
+  const handleLaunchDashboard = () => {
+    router.push("/dashboard");
+  };
+
   return (
     <section className="min-h-[90vh] flex items-center section-gradient pt-20 overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 md:px-8 py-16 md:py-24 w-full">
@@ -30,7 +37,10 @@ export function Hero() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-16">
-              <button className="btn-primary text-base group">
+              <button
+                className="btn-primary text-base group"
+                onClick={handleLaunchDashboard}
+              >
                 Launch Dashboard
                 <ArrowRight
                   size={20}

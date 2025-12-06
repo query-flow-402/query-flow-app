@@ -13,7 +13,7 @@ import {
   FAQ,
   CTA,
   Footer,
-} from "./components";
+} from "./_components";
 
 export default function Home() {
   return (
