@@ -195,10 +195,7 @@ router.post(
         error: {
           code: "INTERNAL_ERROR",
           message: "Failed to process price prediction request",
-          details:
-            process.env.NODE_ENV === "development"
-              ? (error as Error).message
-              : undefined,
+          details: (error as Error).message,
         },
         timestamp: Date.now(),
       });

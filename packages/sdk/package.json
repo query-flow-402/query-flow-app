@@ -1,0 +1,31 @@
+{
+  "name": "@queryflow/sdk",
+  "version": "0.1.0",
+  "description": "QueryFlow SDK for Node.js/TypeScript",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "queryflow",
+    "sdk",
+    "blockchain",
+    "ai",
+    "monitor"
+  ],
+  "author": "QueryFlow Team",
+  "license": "MIT",
+  "dependencies": {
+    "viem": "^2.21.0",
+    "node-fetch": "^3.3.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.2",
+    "@types/node": "^20.0.0"
+  }
+}
