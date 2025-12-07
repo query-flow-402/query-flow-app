@@ -85,6 +85,11 @@ router.post(
         const payerAddress = req.payment.payer as Address;
         const paymentAmount = BigInt(req.payment.amount);
 
+        console.log("📝 Recording query on-chain...");
+        console.log(`   Payer: ${payerAddress}`);
+        console.log(`   Amount: ${paymentAmount}`);
+        console.log(`   ResultHash: ${resultHash}`);
+
         recordQuery(payerAddress, "market", paymentAmount, resultHash)
           .then(({ txHash, queryId }) => {
             console.log(
@@ -93,7 +98,10 @@ router.post(
           })
           .catch((err) => {
             console.error("❌ Failed to record query on-chain:", err.message);
+            console.error("   Full error:", err);
           });
+      } else {
+        console.log("⚠️ No payment info - skipping recordQuery");
       }
 
       // 5. Return response

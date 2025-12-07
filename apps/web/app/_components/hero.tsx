@@ -83,7 +83,7 @@ export function Hero() {
           <div className="hidden md:block relative h-[450px] animate-fade-in-up stagger-2">
             {/* Main Card */}
             <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-3xl flex flex-col items-center justify-center text-center p-6 hover-float"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-3xl flex flex-col items-center justify-center text-center p-6 "
               style={{
                 background: "linear-gradient(135deg, #14B8A6 0%, #0D9488 100%)",
                 boxShadow: "0 25px 50px -12px rgba(20, 184, 166, 0.4)",
@@ -96,7 +96,7 @@ export function Hero() {
 
             {/* Floating Cards */}
             <div
-              className="absolute top-4 left-8 p-4 rounded-2xl bg-white border border-[#E5E5E5] shadow-lg hover-lift animate-float-slow"
+              className="absolute top-4 left-8 p-4 rounded-2xl bg-white border border-[#E5E5E5] shadow-lg animate-float-slow"
               style={{ animationDelay: "0s" }}
             >
               <Zap size={24} className="text-[#14B8A6] mb-2" />
@@ -107,7 +107,7 @@ export function Hero() {
             </div>
 
             <div
-              className="absolute top-12 right-4 p-4 rounded-2xl bg-white border border-[#E5E5E5] shadow-lg hover-lift animate-float-slow"
+              className="absolute top-12 right-4 p-4 rounded-2xl bg-white border border-[#E5E5E5] shadow-lg animate-float-slow"
               style={{ animationDelay: "1s" }}
             >
               <Shield size={24} className="text-[#14B8A6] mb-2" />
@@ -116,7 +116,7 @@ export function Hero() {
             </div>
 
             <div
-              className="absolute bottom-12 left-4 p-4 rounded-2xl bg-white border border-[#E5E5E5] shadow-lg hover-lift animate-float-slow"
+              className="absolute bottom-12 left-4 p-4 rounded-2xl bg-white border border-[#E5E5E5] shadow-lg animate-float-slow"
               style={{ animationDelay: "2s" }}
             >
               <Globe size={24} className="text-[#14B8A6] mb-2" />
@@ -128,7 +128,7 @@ export function Hero() {
 
             {/* Code snippet card */}
             <div
-              className="absolute bottom-4 right-0 p-3 rounded-xl bg-[#1A1A1A] shadow-lg hover-lift animate-float-slow"
+              className="absolute bottom-4 right-0 p-3 rounded-xl bg-[#1A1A1A] shadow-lg animate-float-slow"
               style={{ animationDelay: "0.5s" }}
             >
               <pre className="text-xs font-mono text-[#10B981]">

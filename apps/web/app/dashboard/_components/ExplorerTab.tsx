@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   TrendingUp,
   DollarSign,
@@ -10,7 +10,19 @@ import {
   ExternalLink,
   Copy,
   Check,
+  AlertCircle,
+  Wallet,
 } from "lucide-react";
+import { useActiveAccount } from "thirdweb/react";
+import {
+  queryMarket,
+  queryPrice,
+  queryRisk,
+  querySocial,
+  type PaymentStatus,
+} from "@/lib/api-client";
+import { QueryResultDisplay } from "./QueryResultDisplay";
+import { cacheQueryResult } from "@/lib/query-result-cache";
 
 const queryTypes = [
   {
@@ -49,45 +61,146 @@ const queryTypes = [
 
 type QueryStatus = "idle" | "loading" | "success" | "error";
 
+// API returns different structures per query type - this handles market/social
 interface QueryResult {
-  sentiment: number;
-  label: string;
-  summary: string;
-  factors: string[];
-  queryId: number;
-  txHash: string;
+  sentiment?: {
+    score: number;
+    trend: string;
+    summary: string;
+  };
+  factors?: string[];
+  tokensUsed?: number;
+  // For raw JSON display
+  [key: string]: unknown;
 }
 
 export function ExplorerTab() {
   const [selectedType, setSelectedType] = useState("market");
   const [assets, setAssets] = useState("BTC, ETH");
+  const [timeframe, setTimeframe] = useState("24h");
+  const [walletAddress, setWalletAddress] = useState("");
   const [status, setStatus] = useState<QueryStatus>("idle");
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(
+    null
+  );
   const [result, setResult] = useState<QueryResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent double-clicks
 
+  const account = useActiveAccount();
   const selectedQuery = queryTypes.find((q) => q.id === selectedType)!;
 
+  // Track txHash with ref for synchronous access in callbacks
+  const txHashRef = useRef<string | null>(null);
+
+  const handlePaymentStatus = (status: PaymentStatus) => {
+    setPaymentStatus(status);
+    if (status.txHash) {
+      setTxHash(status.txHash);
+      txHashRef.current = status.txHash; // Update ref synchronously
+    }
+    if (status.stage === "error") {
+      setError(status.error || status.message);
+      setStatus("error");
+      setIsSubmitting(false); // Allow retry on error
+    }
+  };
+
   const handleSubmit = async () => {
+    // Prevent double submission
+    if (isSubmitting) {
+      console.log("⚠️ Submit blocked - already submitting");
+      return;
+    }
+
+    // Check wallet connection
+    if (!account) {
+      setError("Please connect your wallet first");
+      setStatus("error");
+      return;
+    }
+
+    setIsSubmitting(true); // Block further submissions
     setStatus("loading");
+    setError(null);
+    setPaymentStatus(null);
+    setTxHash(null);
+    txHashRef.current = null; // Reset ref for new query
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Parse assets into array
+      const assetList = assets.split(",").map((a) => a.trim().toUpperCase());
 
-    setResult({
-      sentiment: 78,
-      label: "Bullish",
-      summary:
-        "Based on analysis of recent market data, BTC and ETH are showing strong bullish momentum. Trading volume has increased 23% over the past 24 hours, with positive sentiment across major trading platforms.",
-      factors: [
-        "Increased institutional buying pressure",
-        "Positive regulatory news from SEC",
-        "Technical breakout above key resistance levels",
-        "Growing on-chain accumulation from whales",
-      ],
-      queryId: 25,
-      txHash: "0xabc123...def456",
-    });
-    setStatus("success");
+      let response;
+
+      // Call appropriate API based on query type
+      switch (selectedType) {
+        case "market":
+          response = await queryMarket(
+            assetList,
+            timeframe,
+            account,
+            handlePaymentStatus
+          );
+          break;
+        case "price":
+          // Price endpoint expects single asset
+          response = await queryPrice(
+            assetList[0] || "BTC",
+            timeframe,
+            account,
+            handlePaymentStatus
+          );
+          break;
+        case "risk":
+          response = await queryRisk(
+            walletAddress || account.address,
+            account,
+            handlePaymentStatus
+          );
+          break;
+        case "social":
+          // Social endpoint expects single asset
+          response = await querySocial(
+            assetList[0] || "BTC",
+            account,
+            handlePaymentStatus
+          );
+          break;
+        default:
+          throw new Error("Unknown query type");
+      }
+
+      if (response.success && response.data) {
+        setResult(response.data as unknown as QueryResult);
+        setStatus("success");
+        setIsSubmitting(false);
+
+        // Cache the result for history modal display
+        if (txHashRef.current) {
+          cacheQueryResult(txHashRef.current, selectedType, response.data);
+        }
+
+        // Dispatch event to refresh stats cards immediately
+        window.dispatchEvent(new CustomEvent("queryflow:query-completed"));
+      } else {
+        const errorMsg = response.error?.message || "Query failed";
+        const errorCode = response.error?.code
+          ? `[${response.error.code}] `
+          : "";
+        setError(`${errorCode}${errorMsg}`);
+        setStatus("error");
+        setIsSubmitting(false);
+      }
+    } catch (err) {
+      console.error("Query error:", err);
+      const message = err instanceof Error ? err.message : "An error occurred";
+      setError(message);
+      setStatus("error");
+      setIsSubmitting(false);
+    }
   };
 
   const copyResult = () => {
@@ -161,7 +274,7 @@ export function ExplorerTab() {
                 value={assets}
                 onChange={(e) => setAssets(e.target.value)}
                 placeholder="e.g., BTC, ETH, AVAX"
-                className="w-full px-4 py-3 border border-[#E5E5E5] rounded-lg focus:outline-none focus:border-[#14B8A6] font-mono text-sm"
+                className="w-full px-4 py-3 border border-[#E5E5E5] rounded-lg focus:outline-none focus:border-[#14B8A6] font-mono text-sm text-[#0A0A0A] bg-white"
               />
             </div>
 
@@ -169,10 +282,15 @@ export function ExplorerTab() {
               <label className="block text-sm font-medium text-[#0A0A0A] mb-2">
                 Timeframe
               </label>
-              <select className="w-full px-4 py-3 border border-[#E5E5E5] rounded-lg focus:outline-none focus:border-[#14B8A6] text-sm">
-                <option>24 hours</option>
-                <option>7 days</option>
-                <option>30 days</option>
+              <select
+                value={timeframe}
+                onChange={(e) => setTimeframe(e.target.value)}
+                className="w-full px-4 py-3 border border-[#E5E5E5] rounded-lg focus:outline-none focus:border-[#14B8A6] text-sm text-[#0A0A0A] bg-white"
+              >
+                <option value="1h">1 hour</option>
+                <option value="4h">4 hours</option>
+                <option value="24h">24 hours</option>
+                <option value="7d">7 days</option>
               </select>
             </div>
           </div>
@@ -220,66 +338,95 @@ export function ExplorerTab() {
 
         {status === "loading" && (
           <div className="h-full flex flex-col items-center justify-center text-center py-20">
-            <Loader2 size={48} className="text-[#14B8A6] animate-spin mb-4" />
-            <p className="text-[#6A6A6A]">
-              Fetching data from multiple sources...
+            {/* Show appropriate icon based on stage */}
+            {paymentStatus?.stage === "sending" ? (
+              <div className="w-16 h-16 rounded-full bg-[rgba(20,184,166,0.1)] flex items-center justify-center mb-4">
+                <Wallet size={32} className="text-[#14B8A6]" />
+              </div>
+            ) : (
+              <Loader2 size={48} className="text-[#14B8A6] animate-spin mb-4" />
+            )}
+
+            {/* Payment stage message */}
+            <p className="text-[#0A0A0A] font-medium mb-2">
+              {paymentStatus?.stage === "requesting" && "Getting price..."}
+              {paymentStatus?.stage === "sending" && "Confirm in Wallet"}
+              {paymentStatus?.stage === "confirming" &&
+                "Confirming Transaction..."}
+              {paymentStatus?.stage === "submitting" && "Payment Verified!"}
+              {!paymentStatus && "Processing..."}
             </p>
+
+            {/* Show AVAX amount when available */}
+            {paymentStatus?.priceAvax && (
+              <p className="text-[#14B8A6] font-mono text-lg mb-2">
+                {paymentStatus.priceAvax} AVAX
+              </p>
+            )}
+
+            <p className="text-[#6A6A6A] text-sm">
+              {paymentStatus?.message || "Processing your request..."}
+            </p>
+
+            {/* Show transaction hash if available */}
+            {paymentStatus?.txHash && (
+              <a
+                href={`https://testnet.snowtrace.io/tx/${paymentStatus.txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 text-xs text-[#14B8A6] hover:underline flex items-center gap-1"
+              >
+                View on Snowtrace <ExternalLink size={12} />
+              </a>
+            )}
+          </div>
+        )}
+
+        {status === "error" && (
+          <div className="h-full flex flex-col items-center justify-center text-center py-20">
+            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+              <AlertCircle size={32} className="text-red-500" />
+            </div>
+            <p className="text-red-600 font-medium mb-2">Query Failed</p>
+            <p className="text-[#6A6A6A]">{error}</p>
+            <button
+              onClick={() => {
+                setStatus("idle");
+                setError(null);
+              }}
+              className="mt-4 btn-secondary"
+            >
+              Try Again
+            </button>
           </div>
         )}
 
         {status === "success" && result && (
           <div className="space-y-6">
-            {/* Sentiment Score */}
-            <div className="text-center pb-6 border-b border-[#E5E5E5]">
-              <div className="inline-flex items-center justify-center w-32 h-32 rounded-full border-4 border-[#14B8A6] mb-4">
-                <div>
-                  <p className="text-4xl font-bold text-[#0A0A0A]">
-                    {result.sentiment}
-                  </p>
-                  <p className="text-sm text-[#6A6A6A]">/100</p>
-                </div>
-              </div>
-              <p className="text-xl font-semibold text-green-600">
-                {result.label}
-              </p>
-            </div>
-
-            {/* Summary */}
-            <div>
-              <h4 className="font-semibold text-[#0A0A0A] mb-2">
-                Market Summary
-              </h4>
-              <p className="text-[#4A4A4A] leading-relaxed">{result.summary}</p>
-            </div>
-
-            {/* Key Factors */}
-            <div>
-              <h4 className="font-semibold text-[#0A0A0A] mb-2">Key Factors</h4>
-              <ul className="space-y-2">
-                {result.factors.map((factor, index) => (
-                  <li
-                    key={index}
-                    className="flex items-start gap-2 text-[#4A4A4A]"
-                  >
-                    <span className="text-[#14B8A6]">✓</span>
-                    {factor}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* Query-type specific display */}
+            <QueryResultDisplay
+              type={selectedType as "market" | "price" | "risk" | "social"}
+              result={result}
+            />
 
             {/* Metadata */}
             <div className="pt-6 border-t border-[#E5E5E5] flex flex-wrap gap-4 text-sm text-[#6A6A6A]">
-              <span>Query ID: #{result.queryId}</span>
+              <span>Type: {selectedQuery.name}</span>
               <span>•</span>
               <span>Paid: ${selectedQuery.price.toFixed(2)}</span>
-              <span>•</span>
-              <a
-                href="#"
-                className="text-[#14B8A6] hover:underline inline-flex items-center gap-1"
-              >
-                View on Snowtrace <ExternalLink size={14} />
-              </a>
+              {txHash && (
+                <>
+                  <span>•</span>
+                  <a
+                    href={`https://testnet.snowtrace.io/tx/${txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#14B8A6] hover:underline flex items-center gap-1"
+                  >
+                    View Tx <ExternalLink size={12} />
+                  </a>
+                </>
+              )}
             </div>
 
             {/* Actions */}

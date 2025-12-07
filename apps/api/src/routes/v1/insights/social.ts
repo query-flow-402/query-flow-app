@@ -7,6 +7,7 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { keccak256, toHex, type Address } from "viem";
 import { x402Middleware } from "../../../middleware/x402.js";
+import { x402RealPayment } from "../../../middleware/x402-real.js";
 import { aiService } from "../../../services/ai.js";
 import {
   getSocialData,
@@ -48,13 +49,19 @@ const SocialRequestSchema = z.object({
 
 const router = Router();
 
+// Dynamic middleware selection based on PAYMENT_MODE
+function getPaymentMiddleware() {
+  const mode = process.env.PAYMENT_MODE || "signature";
+  return mode === "real" ? x402RealPayment("social") : x402Middleware("social");
+}
+
 /**
  * POST /social
  * Get AI-powered social media sentiment analysis
  */
 router.post(
   "/social",
-  x402Middleware("social"),
+  (req, res, next) => getPaymentMiddleware()(req, res, next),
   async (req: Request, res: Response) => {
     try {
       // 1. Validate request body

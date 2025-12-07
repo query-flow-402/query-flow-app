@@ -22,10 +22,17 @@ const AVALANCHE_RPC_URL =
   process.env.AVALANCHE_RPC_URL || "https://api.avax-test.network/ext/bc/C/rpc";
 const PRIVATE_KEY = process.env.PRIVATE_KEY as Hex | undefined;
 
-const QUERY_REGISTRY_ADDRESS = (process.env.QUERY_REGISTRY_ADDRESS ||
-  "0x254099809Aa6D702A7dBe17180629d7BBA6548e2") as Address;
-const AGENT_REGISTRY_ADDRESS = (process.env.AGENT_REGISTRY_ADDRESS ||
-  "0x5424d6482fA1EF5378b927fC6606ED27318A1F30") as Address;
+if (!process.env.QUERY_REGISTRY_ADDRESS) {
+  throw new Error("QUERY_REGISTRY_ADDRESS environment variable is required");
+}
+if (!process.env.AGENT_REGISTRY_ADDRESS) {
+  throw new Error("AGENT_REGISTRY_ADDRESS environment variable is required");
+}
+
+export const QUERY_REGISTRY_ADDRESS = process.env
+  .QUERY_REGISTRY_ADDRESS as Address;
+export const AGENT_REGISTRY_ADDRESS = process.env
+  .AGENT_REGISTRY_ADDRESS as Address;
 
 // Log config on module load (for debugging)
 console.log("📋 Contract Config:");

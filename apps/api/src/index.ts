@@ -3,19 +3,20 @@
  * Pay-per-query data insights for AI agents using x402 payments
  */
 
+// IMPORTANT: Load environment variables FIRST before any other imports
+// This must be at the very top because ES module imports are hoisted
+import "dotenv/config";
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import dotenv from "dotenv";
 
-// Load environment variables
-dotenv.config();
-
-// Import routes
+// Import routes (these depend on env vars being loaded)
 import marketRouter from "./routes/v1/insights/market.js";
 import priceRouter from "./routes/v1/insights/price.js";
 import riskRouter from "./routes/v1/insights/risk.js";
 import socialRouter from "./routes/v1/insights/social.js";
+import historyRouter from "./routes/v1/history.js";
 
 // Initialize Express
 const app = express();
@@ -60,6 +61,7 @@ app.get("/", (req, res) => {
       price: "POST /api/v1/insights/price ($0.03)",
       risk: "POST /api/v1/insights/risk ($0.05)",
       social: "POST /api/v1/insights/social ($0.02)",
+      history: "GET /api/v1/history/:address",
     },
   });
 });
@@ -69,6 +71,9 @@ app.use("/api/v1/insights", marketRouter);
 app.use("/api/v1/insights", priceRouter);
 app.use("/api/v1/insights", riskRouter);
 app.use("/api/v1/insights", socialRouter);
+
+// History API
+app.use("/api/v1/history", historyRouter);
 
 // =============================================================================
 // ERROR HANDLING

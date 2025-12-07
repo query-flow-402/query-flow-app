@@ -7,6 +7,7 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { keccak256, toHex, type Address } from "viem";
 import { x402Middleware } from "../../../middleware/x402.js";
+import { x402RealPayment } from "../../../middleware/x402-real.js";
 import { aiService } from "../../../services/ai.js";
 import {
   getWalletData,
@@ -55,13 +56,19 @@ const RiskRequestSchema = z.object({
 
 const router = Router();
 
+// Dynamic middleware selection based on PAYMENT_MODE
+function getPaymentMiddleware() {
+  const mode = process.env.PAYMENT_MODE || "signature";
+  return mode === "real" ? x402RealPayment("risk") : x402Middleware("risk");
+}
+
 /**
  * POST /risk
  * Get AI-powered wallet risk assessment
  */
 router.post(
   "/risk",
-  x402Middleware("risk"),
+  (req, res, next) => getPaymentMiddleware()(req, res, next),
   async (req: Request, res: Response) => {
     try {
       // 1. Validate request body
