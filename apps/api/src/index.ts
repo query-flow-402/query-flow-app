@@ -17,6 +17,7 @@ import priceRouter from "./routes/v1/insights/price.js";
 import riskRouter from "./routes/v1/insights/risk.js";
 import socialRouter from "./routes/v1/insights/social.js";
 import historyRouter from "./routes/v1/history.js";
+import analyticsRouter from "./routes/v1/analytics.js";
 
 // Initialize Express
 const app = express();
@@ -62,6 +63,7 @@ app.get("/", (req, res) => {
       risk: "POST /api/v1/insights/risk ($0.05)",
       social: "POST /api/v1/insights/social ($0.02)",
       history: "GET /api/v1/history/:address",
+      analytics: "GET /api/v1/analytics/network/*",
     },
   });
 });
@@ -74,6 +76,9 @@ app.use("/api/v1/insights", socialRouter);
 
 // History API
 app.use("/api/v1/history", historyRouter);
+
+// Analytics API (Network Tab)
+app.use("/api/v1/analytics", analyticsRouter);
 
 // =============================================================================
 // ERROR HANDLING

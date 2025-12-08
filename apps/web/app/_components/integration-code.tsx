@@ -1,22 +1,19 @@
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
 
-const codeExample = `// Query market sentiment with x402 payment
-const response = await fetch('https://api.queryflow.ai/v1/insights/market', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'X-402-Payment': paymentSignature // Signed with agent's wallet
-  },
-  body: JSON.stringify({
-    assets: ['bitcoin', 'ethereum', 'avalanche'],
-    timeframe: '24h'
-  })
+const codeExample = `import { QueryFlowClient } from "@queryflow/sdk";
+
+// Initialize with your private key (no API Key needed!)
+const client = new QueryFlowClient(process.env.PRIVATE_KEY);
+
+// Get AI-powered market insights
+const result = await client.market({
+  assets: ["BTC", "ETH"],
+  timeframe: "24h"
 });
 
-// Response includes AI-powered insights
-const { insight, confidence, sources } = await response.json();
-console.log(insight); // "BTC showing bullish momentum..."`;
+console.log(result.sentiment);
+// Output: { score: 72, trend: "bullish", summary: "..." }`;
 
 export function IntegrationCode() {
   const [copied, setCopied] = useState(false);
@@ -46,8 +43,8 @@ export function IntegrationCode() {
             className="text-[#4A4A4A] mx-auto"
             style={{ maxWidth: "600px", fontSize: "1.125rem", lineHeight: 1.6 }}
           >
-            Add pay-per-query data to your AI agent in minutes. Just make an
-            HTTP request and handle the 402 response.
+            Add pay-per-query data to your AI agent in minutes. Use our official
+            SDK or raw HTTP requests.
           </p>
         </div>
 
@@ -87,12 +84,18 @@ export function IntegrationCode() {
           style={{ maxWidth: "800px" }}
         >
           <div className="text-center">
-            <p className="font-semibold text-[#0A0A0A] mb-1">Any Language</p>
-            <p className="text-sm text-[#6A6A6A]">Works with any HTTP client</p>
+            <p className="font-semibold text-[#0A0A0A] mb-1">TypeScript SDK</p>
+            <p className="text-sm text-[#6A6A6A]">
+              Type-safe, instant integration
+            </p>
           </div>
           <div className="text-center">
-            <p className="font-semibold text-[#0A0A0A] mb-1">No SDK Required</p>
-            <p className="text-sm text-[#6A6A6A]">Standard REST API</p>
+            <p className="font-semibold text-[#0A0A0A] mb-1">
+              Raw HTTP Support
+            </p>
+            <p className="text-sm text-[#6A6A6A]">
+              Compatible with any language
+            </p>
           </div>
           <div className="text-center">
             <p className="font-semibold text-[#0A0A0A] mb-1">

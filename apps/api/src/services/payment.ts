@@ -12,7 +12,7 @@ import {
   type Address,
 } from "viem";
 import { avalancheFuji } from "viem/chains";
-import { getSimplePrices } from "./coingecko.js";
+import * as moralis from "./moralis.js";
 import { PaymentError } from "../lib/errors.js";
 
 // =============================================================================
@@ -62,14 +62,14 @@ export interface PriceQuote {
 // =============================================================================
 
 /**
- * Get current AVAX price in USD
+ * Get current AVAX price in USD from Moralis
  */
 export async function getAvaxPriceUsd(): Promise<number> {
   try {
-    const prices = await getSimplePrices(["avalanche-2"]);
-    return prices["avalanche-2"]?.usd || 35; // Fallback to ~$35
+    const prices = await moralis.getPricesByIds(["avalanche-2"]);
+    return prices["avalanche-2"] || 35; // Fallback to ~$35
   } catch {
-    console.warn("Failed to fetch AVAX price, using fallback");
+    console.warn("Failed to fetch AVAX price from Moralis, using fallback");
     return 35;
   }
 }

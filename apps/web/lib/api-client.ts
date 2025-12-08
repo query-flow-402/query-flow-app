@@ -29,6 +29,57 @@ export interface PaymentHeader {
   payer: string;
 }
 
+// Result Types matching the API response structure's "data" field
+
+export interface MarketResult {
+  tokensUsed: number;
+  sentiment: {
+    score: number;
+    trend: "bullish" | "bearish" | "neutral";
+    summary: string;
+  };
+  factors: string[];
+}
+
+export interface PriceResult {
+  prediction: {
+    targetPrice: number;
+    direction: "bullish" | "bearish" | "neutral";
+    confidence: number;
+    timeframe: string;
+  };
+  signals: Array<{
+    indicator: string;
+    value: string;
+    impact: "positive" | "negative" | "neutral";
+  }>;
+  technicalAnalysis?: {
+    rsi: number;
+    support: number;
+    resistance: number;
+    trend: string;
+  };
+  context: string;
+}
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+export interface RealPaymentRequirement {
+  priceUsd: number;
+  priceAvax: string;
+  avaxPriceUsd: number;
+  paymentAddress: string;
+  expiresAt: number;
+}
+
+export interface PaymentHeader {
+  mode: "tx";
+  txHash: string;
+  payer: string;
+}
+
 export interface QueryResult<T = unknown> {
   success: boolean;
   data?: T;

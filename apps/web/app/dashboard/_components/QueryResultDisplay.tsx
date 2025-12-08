@@ -29,6 +29,12 @@ interface PriceResult {
     timeframe: string;
   };
   signals?: Array<{ indicator: string; value: string; impact: string }>;
+  technicalAnalysis?: {
+    rsi: number;
+    support: number;
+    resistance: number;
+    trend: string;
+  };
   context?: string;
 }
 
@@ -184,11 +190,80 @@ function PriceResultDisplay({ result }: { result: PriceResult }) {
       </div>
 
       {/* Technical Signals */}
+      {result.technicalAnalysis && (
+        <div className="mb-6">
+          <h4 className="font-semibold text-[#0A0A0A] mb-3">
+            Technical Analysis
+          </h4>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            {/* RSI */}
+            <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
+              <p className="text-xs text-[#6A6A6A] uppercase mb-1">RSI (14)</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-lg font-bold text-[#0A0A0A]">
+                  {result.technicalAnalysis.rsi.toFixed(1)}
+                </span>
+                <span
+                  className={`text-xs px-1.5 py-0.5 rounded ${
+                    result.technicalAnalysis.rsi > 70
+                      ? "bg-red-100 text-red-700"
+                      : result.technicalAnalysis.rsi < 30
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {result.technicalAnalysis.rsi > 70
+                    ? "Overbought"
+                    : result.technicalAnalysis.rsi < 30
+                      ? "Oversold"
+                      : "Neutral"}
+                </span>
+              </div>
+            </div>
+
+            {/* Volume Trend */}
+            <div className="p-3 bg-gray-50 border border-gray-100 rounded-lg">
+              <p className="text-xs text-[#6A6A6A] uppercase mb-1">
+                Volume Trend
+              </p>
+              <div className="flex items-center gap-2">
+                {result.technicalAnalysis.trend === "increasing" ? (
+                  <TrendingUp size={16} className="text-green-500" />
+                ) : result.technicalAnalysis.trend === "decreasing" ? (
+                  <TrendingDown size={16} className="text-red-500" />
+                ) : (
+                  <Minus size={16} className="text-gray-400" />
+                )}
+                <span className="text-sm font-medium capitalize text-[#0A0A0A]">
+                  {result.technicalAnalysis.trend}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {/* Support */}
+            <div className="p-3 bg-green-50 border border-green-100 rounded-lg text-center">
+              <p className="text-xs text-green-700 uppercase mb-1">Support</p>
+              <p className="font-mono font-medium text-green-900">
+                ${result.technicalAnalysis.support.toLocaleString()}
+              </p>
+            </div>
+
+            {/* Resistance */}
+            <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-center">
+              <p className="text-xs text-red-700 uppercase mb-1">Resistance</p>
+              <p className="font-mono font-medium text-red-900">
+                ${result.technicalAnalysis.resistance.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {result.signals && result.signals.length > 0 && (
         <div>
-          <h4 className="font-semibold text-[#0A0A0A] mb-3">
-            Technical Signals
-          </h4>
+          <h4 className="font-semibold text-[#0A0A0A] mb-3">AI Signals</h4>
           <div className="grid grid-cols-2 gap-3">
             {result.signals.map((signal, i) => (
               <div

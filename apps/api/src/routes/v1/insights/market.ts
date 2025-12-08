@@ -14,6 +14,7 @@ import {
   formatDataForPrompt,
 } from "../../../services/data-aggregator.js";
 import { recordQuery } from "../../../lib/contracts.js";
+import { recordQueryEvent } from "../../../services/analytics-cache.js";
 import type {
   MarketSentiment,
   InsightResponse,
@@ -52,6 +53,8 @@ router.post(
   "/market",
   (req, res, next) => getPaymentMiddleware()(req, res, next),
   async (req: Request, res: Response) => {
+    const startTime = Date.now();
+
     try {
       // 1. Validate request body
       const validation = MarketRequestSchema.safeParse(req.body);
@@ -70,9 +73,11 @@ router.post(
 
       const { assets, timeframe } = validation.data;
 
-      // 2. Fetch market data
+      // 2. Fetch market data (Track data source)
       console.log(`📊 Fetching market data for: ${assets.join(", ")}`);
+      const dataFetchStart = Date.now();
       const marketData = await aggregateMarketData(assets);
+      const dataFetchLatency = Date.now() - dataFetchStart;
       const formattedData = formatDataForPrompt(marketData);
 
       // 3. Generate AI insight
@@ -84,11 +89,27 @@ router.post(
         const resultHash = keccak256(toHex(JSON.stringify(insight)));
         const payerAddress = req.payment.payer as Address;
         const paymentAmount = BigInt(req.payment.amount);
+        const truncatedWallet = `${payerAddress.slice(0, 6)}...${payerAddress.slice(-4)}`;
 
         console.log("📝 Recording query on-chain...");
         console.log(`   Payer: ${payerAddress}`);
         console.log(`   Amount: ${paymentAmount}`);
         console.log(`   ResultHash: ${resultHash}`);
+
+        // Record to analytics cache (immediate)
+        recordQueryEvent({
+          type: "market",
+          wallet: truncatedWallet,
+          amount: (Number(paymentAmount) / 1e18).toFixed(6),
+          amountUsd: (Number(paymentAmount) / 1e18) * 13.3,
+          timestamp: Date.now(),
+          txHash: req.payment.txHash || "0x0",
+          dataSource: {
+            primary: "cryptocompare", // Market uses CryptoCompare for trending
+            latencyMs: dataFetchLatency,
+            timestamp: Date.now(),
+          },
+        });
 
         recordQuery(payerAddress, "market", paymentAmount, resultHash)
           .then(({ txHash, queryId }) => {

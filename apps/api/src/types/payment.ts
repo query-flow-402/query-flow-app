@@ -41,6 +41,7 @@ export type PaymentHeader = z.infer<typeof PaymentHeaderSchema>;
 export interface PaymentData extends PaymentHeader {
   verified: boolean;
   amountUsd: number;
+  txHash?: string; // Transaction hash for real payment mode
 }
 
 // =============================================================================
