@@ -311,6 +311,69 @@ export class AIService {
   }
 
   /**
+   * Generate insight with streaming (SSE-compatible)
+   * Yields chunks as they arrive from the AI
+   */
+  async *generateInsightStream(
+    type: QueryType,
+    data: unknown
+  ): AsyncGenerator<{
+    type: "chunk" | "done";
+    content: string;
+    tokensUsed?: number;
+  }> {
+    const prompt = this.buildPrompt(type, data);
+    let fullContent = "";
+    let tokensUsed = 0;
+
+    try {
+      const stream = await getOpenAI().chat.completions.create({
+        model: getModel(),
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a crypto market analyst. Always respond with valid JSON only.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        max_tokens: MAX_TOKENS,
+        temperature: 0.3,
+        stream: true,
+      });
+
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta?.content;
+        if (delta) {
+          fullContent += delta;
+          yield { type: "chunk", content: delta };
+        }
+
+        // Track usage from final chunk
+        if (chunk.usage) {
+          tokensUsed = chunk.usage.total_tokens;
+        }
+      }
+
+      // Yield final done event with complete content
+      yield { type: "done", content: fullContent, tokensUsed };
+    } catch (error) {
+      if (error instanceof OpenAI.APIError) {
+        throw new AIServiceError(`OpenAI API error: ${error.message}`, {
+          status: error.status,
+          code: error.code,
+        });
+      }
+      throw new AIServiceError("Streaming failed", {
+        originalError: (error as Error).message,
+      });
+    }
+  }
+
+  /**
    * Estimate tokens for a prompt
    */
   estimateTokens(text: string): number {

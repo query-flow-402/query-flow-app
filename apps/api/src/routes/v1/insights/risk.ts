@@ -8,6 +8,7 @@ import { z } from "zod";
 import { keccak256, toHex, type Address } from "viem";
 import { x402Middleware } from "../../../middleware/x402.js";
 import { x402RealPayment } from "../../../middleware/x402-real.js";
+import { dualModeX402Middleware } from "../../../middleware/dual-mode-x402.js";
 import { aiService } from "../../../services/ai.js";
 import {
   getWalletData,
@@ -17,6 +18,7 @@ import {
   isValidAddress,
 } from "../../../services/on-chain.js";
 import { recordQuery } from "../../../lib/contracts.js";
+import { recordQueryEvent } from "../../../services/analytics-cache.js";
 
 // =============================================================================
 // TYPES
@@ -57,8 +59,12 @@ const RiskRequestSchema = z.object({
 const router = Router();
 
 // Dynamic middleware selection based on PAYMENT_MODE
+// Options: "signature" (dev), "real" (custom tx), "dual" (both AVAX and USDC)
 function getPaymentMiddleware() {
   const mode = process.env.PAYMENT_MODE || "signature";
+  if (mode === "dual") {
+    return dualModeX402Middleware("risk");
+  }
   return mode === "real" ? x402RealPayment("risk") : x402Middleware("risk");
 }
 
@@ -164,11 +170,27 @@ router.post(
         tokensUsed: rawInsight.tokensUsed || 0,
       };
 
-      // 5. Record query on-chain (async)
+      // 5. Record query on-chain (async) + analytics cache
       if (req.payment) {
         const resultHash = keccak256(toHex(JSON.stringify(assessment)));
         const payerAddress = req.payment.payer as Address;
         const paymentAmount = BigInt(req.payment.amount);
+        const truncatedWallet = `${payerAddress.slice(0, 6)}...${payerAddress.slice(-4)}`;
+
+        // Record to analytics cache (immediate) - for Network tab
+        recordQueryEvent({
+          type: "risk",
+          wallet: truncatedWallet,
+          amount: (Number(paymentAmount) / 1e18).toFixed(6),
+          amountUsd: (Number(paymentAmount) / 1e18) * 35,
+          timestamp: Date.now(),
+          txHash: req.payment.txHash || "0x0",
+          dataSource: {
+            primary: "openai",
+            latencyMs: 0,
+            timestamp: Date.now(),
+          },
+        });
 
         recordQuery(payerAddress, "risk", paymentAmount, resultHash)
           .then(({ txHash, queryId }) => {

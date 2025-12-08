@@ -135,7 +135,7 @@ export function ExplorerTab() {
 
       let response;
 
-      // Call appropriate API based on query type
+      // AVAX payment via custom x402
       switch (selectedType) {
         case "market":
           response = await queryMarket(
@@ -146,7 +146,6 @@ export function ExplorerTab() {
           );
           break;
         case "price":
-          // Price endpoint expects single asset
           response = await queryPrice(
             assetList[0] || "BTC",
             timeframe,
@@ -162,7 +161,6 @@ export function ExplorerTab() {
           );
           break;
         case "social":
-          // Social endpoint expects single asset
           response = await querySocial(
             assetList[0] || "BTC",
             account,
@@ -302,7 +300,7 @@ export function ExplorerTab() {
             ${selectedQuery.price.toFixed(2)}
           </p>
           <p className="text-sm text-[#6A6A6A] mt-1">
-            Will be charged from your wallet
+            ~{(selectedQuery.price / 35).toFixed(6)} AVAX (approx)
           </p>
         </div>
 

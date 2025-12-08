@@ -8,6 +8,8 @@ import { z } from "zod";
 import { keccak256, toHex, type Address } from "viem";
 import { x402Middleware } from "../../../middleware/x402.js";
 import { x402RealPayment } from "../../../middleware/x402-real.js";
+import { thirdwebX402Middleware } from "../../../middleware/thirdweb-x402.js";
+import { dualModeX402Middleware } from "../../../middleware/dual-mode-x402.js";
 import { aiService } from "../../../services/ai.js";
 import {
   aggregateMarketData,
@@ -39,10 +41,19 @@ const MarketRequestSchema = z.object({
 const router = Router();
 
 // Dynamic middleware selection based on PAYMENT_MODE (checked at runtime)
+// Options: "signature" (dev), "real" (custom tx), "thirdweb" (standard x402), "dual" (both)
 function getPaymentMiddleware() {
   const mode = process.env.PAYMENT_MODE || "signature";
   console.log(`💳 Payment mode: ${mode}`);
-  return mode === "real" ? x402RealPayment("market") : x402Middleware("market");
+
+  if (mode === "dual") {
+    return dualModeX402Middleware("market");
+  } else if (mode === "thirdweb") {
+    return thirdwebX402Middleware("market");
+  } else if (mode === "real") {
+    return x402RealPayment("market");
+  }
+  return x402Middleware("market");
 }
 
 /**

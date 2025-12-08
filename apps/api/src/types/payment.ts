@@ -42,6 +42,7 @@ export interface PaymentData extends PaymentHeader {
   verified: boolean;
   amountUsd: number;
   txHash?: string; // Transaction hash for real payment mode
+  mode?: "signature" | "avax" | "usdc"; // Payment mode used
 }
 
 // =============================================================================

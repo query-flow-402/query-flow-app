@@ -182,13 +182,15 @@ function QueryDetailModal({
           )}
 
           {/* Cached Insight Result */}
-          {cachedResult && (
+          {cachedResult ? (
             <div className="bg-[#F8F8F8] rounded-lg overflow-hidden">
               <div className="p-4 border-b border-[#E5E5E5] flex items-center justify-between">
                 <p className="text-xs text-[#6A6A6A] uppercase">
-                  Cached Insight
+                  AI Insight Summary
                 </p>
-                <span className="text-xs text-[#6A6A6A]">Saved locally</span>
+                <span className="text-xs text-[#14B8A6]">
+                  From this session
+                </span>
               </div>
               <div className="p-4 space-y-4">
                 <QueryResultDisplay
@@ -196,6 +198,16 @@ function QueryDetailModal({
                   result={cachedResult.result as any}
                 />
               </div>
+            </div>
+          ) : (
+            <div className="bg-[#F8F8F8] rounded-lg p-4">
+              <p className="text-xs text-[#6A6A6A] uppercase mb-2">
+                AI Insight Summary
+              </p>
+              <p className="text-sm text-[#6A6A6A] italic">
+                Insight details are cached during the session. Re-run this query
+                type to see the full AI analysis.
+              </p>
             </div>
           )}
 

@@ -12,6 +12,8 @@ import { z } from "zod";
 import { keccak256, toHex, type Address } from "viem";
 import { x402Middleware } from "../../../middleware/x402.js";
 import { x402RealPayment } from "../../../middleware/x402-real.js";
+import { thirdwebX402Middleware } from "../../../middleware/thirdweb-x402.js";
+import { dualModeX402Middleware } from "../../../middleware/dual-mode-x402.js";
 import { aiService } from "../../../services/ai.js";
 import * as moralis from "../../../services/moralis.js";
 import {
@@ -66,9 +68,18 @@ const PriceRequestSchema = z.object({
 const router = Router();
 
 // Dynamic middleware selection based on PAYMENT_MODE
+// Options: "signature" (dev), "real" (custom tx), "thirdweb" (standard x402), "dual" (both)
 function getPaymentMiddleware() {
   const mode = process.env.PAYMENT_MODE || "signature";
-  return mode === "real" ? x402RealPayment("price") : x402Middleware("price");
+
+  if (mode === "dual") {
+    return dualModeX402Middleware("price");
+  } else if (mode === "thirdweb") {
+    return thirdwebX402Middleware("price");
+  } else if (mode === "real") {
+    return x402RealPayment("price");
+  }
+  return x402Middleware("price");
 }
 
 /**

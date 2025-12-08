@@ -397,16 +397,18 @@ export function NetworkTab() {
                   <span className="font-mono text-sm text-[#14B8A6]">
                     {item.amount} AVAX
                   </span>
-                  {item.txHash !== "0x0" && (
-                    <a
-                      href={`https://testnet.snowtrace.io/tx/${item.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-xs text-blue-500 hover:underline"
-                    >
-                      View Tx
-                    </a>
-                  )}
+                  {item.txHash &&
+                    item.txHash.startsWith("0x") &&
+                    item.txHash.length === 66 && (
+                      <a
+                        href={`https://testnet.snowtrace.io/tx/${item.txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-xs text-blue-500 hover:underline"
+                      >
+                        View Tx
+                      </a>
+                    )}
                 </div>
               </div>
             ))}

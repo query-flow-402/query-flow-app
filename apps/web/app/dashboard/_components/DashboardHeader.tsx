@@ -2,14 +2,25 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Wallet, ChevronRight, Copy, Check, LogOut } from "lucide-react";
+import {
+  ChevronRight,
+  Wallet,
+  Copy,
+  Check,
+  LogOut,
+  ChevronDown,
+} from "lucide-react";
 import { useState } from "react";
 import {
   useActiveAccount,
   useActiveWalletChain,
   useDisconnect,
   useActiveWallet,
+  useConnect,
+  ConnectButton,
 } from "thirdweb/react";
+import { createWallet } from "thirdweb/wallets";
+import { client, supportedChains, defaultChain } from "@/lib/thirdweb";
 
 function truncateAddress(address: string) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -17,7 +28,7 @@ function truncateAddress(address: string) {
 
 export function DashboardHeader() {
   const [copied, setCopied] = useState(false);
-  const [showDisconnect, setShowDisconnect] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   const account = useActiveAccount();
   const chain = useActiveWalletChain();
@@ -36,7 +47,7 @@ export function DashboardHeader() {
     if (wallet) {
       disconnect(wallet);
     }
-    setShowDisconnect(false);
+    setShowDropdown(false);
   };
 
   return (
@@ -78,43 +89,79 @@ export function DashboardHeader() {
           {account ? (
             <div
               className="relative"
-              onMouseEnter={() => setShowDisconnect(true)}
-              onMouseLeave={() => setShowDisconnect(false)}
+              onMouseEnter={() => setShowDropdown(true)}
+              onMouseLeave={() => setShowDropdown(false)}
             >
-              <button
-                onClick={copyAddress}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
+              {/* Main button - just shows address */}
+              <div
+                className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors"
                 style={{ background: "rgba(20, 184, 166, 0.1)" }}
               >
                 <Wallet size={18} className="text-[#14B8A6]" />
                 <span className="font-mono text-sm font-medium text-[#0A0A0A]">
                   {truncateAddress(account.address)}
                 </span>
-                {copied ? (
-                  <Check size={14} className="text-green-500" />
-                ) : (
-                  <Copy size={14} className="text-[#9A9A9A]" />
-                )}
-              </button>
+                <ChevronDown size={14} className="text-[#9A9A9A]" />
+              </div>
 
-              {/* Disconnect dropdown */}
-              {showDisconnect && (
-                <button
-                  onClick={handleDisconnect}
-                  className="absolute top-full right-0 mt-1 w-full px-4 py-2 bg-white border border-[#E5E5E5] rounded-lg shadow-lg flex items-center gap-2 text-red-500 hover:bg-red-50 transition-colors"
-                >
-                  <LogOut size={14} />
-                  <span className="text-sm font-medium">Disconnect</span>
-                </button>
+              {/* Dropdown menu */}
+              {showDropdown && (
+                <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-[#E5E5E5] rounded-lg shadow-lg overflow-hidden">
+                  {/* Copy address */}
+                  <button
+                    onClick={copyAddress}
+                    className="w-full px-4 py-2.5 flex items-center gap-2 hover:bg-[#F5F5F5] transition-colors"
+                  >
+                    {copied ? (
+                      <Check size={14} className="text-green-500" />
+                    ) : (
+                      <Copy size={14} className="text-[#6A6A6A]" />
+                    )}
+                    <span className="text-sm text-[#0A0A0A]">
+                      {copied ? "Copied!" : "Copy Address"}
+                    </span>
+                  </button>
+
+                  {/* Divider */}
+                  <div className="border-t border-[#E5E5E5]" />
+
+                  {/* Disconnect */}
+                  <button
+                    onClick={handleDisconnect}
+                    className="w-full px-4 py-2.5 flex items-center gap-2 text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut size={14} />
+                    <span className="text-sm font-medium">Disconnect</span>
+                  </button>
+                </div>
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#F5F5F5]">
-              <Wallet size={18} className="text-[#9A9A9A]" />
-              <span className="font-mono text-sm text-[#9A9A9A]">
-                Not Connected
-              </span>
-            </div>
+            // Connect Button - Use Thirdweb only for connection modal
+            <ConnectButton
+              client={client}
+              chains={supportedChains}
+              chain={defaultChain}
+              connectButton={{
+                label: "Connect Wallet",
+                style: {
+                  backgroundColor: "rgba(20, 184, 166, 0.1)",
+                  color: "#0A0A0A",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  border: "none",
+                },
+              }}
+              theme="light"
+              connectModal={{
+                title: "Connect to QueryFlow",
+                size: "compact",
+                showThirdwebBranding: false,
+              }}
+            />
           )}
         </div>
       </div>

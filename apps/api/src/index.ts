@@ -13,6 +13,7 @@ import helmet from "helmet";
 
 // Import routes (these depend on env vars being loaded)
 import marketRouter from "./routes/v1/insights/market.js";
+import marketStreamRouter from "./routes/v1/insights/market-stream.js";
 import priceRouter from "./routes/v1/insights/price.js";
 import riskRouter from "./routes/v1/insights/risk.js";
 import socialRouter from "./routes/v1/insights/social.js";
@@ -59,6 +60,7 @@ app.get("/", (req, res) => {
     endpoints: {
       health: "GET /health",
       market: "POST /api/v1/insights/market ($0.02)",
+      marketStream: "POST /api/v1/insights/market/stream (SSE)",
       price: "POST /api/v1/insights/price ($0.03)",
       risk: "POST /api/v1/insights/risk ($0.05)",
       social: "POST /api/v1/insights/social ($0.02)",
@@ -70,6 +72,7 @@ app.get("/", (req, res) => {
 
 // Insights API
 app.use("/api/v1/insights", marketRouter);
+app.use("/api/v1/insights", marketStreamRouter);
 app.use("/api/v1/insights", priceRouter);
 app.use("/api/v1/insights", riskRouter);
 app.use("/api/v1/insights", socialRouter);
