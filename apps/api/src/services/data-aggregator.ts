@@ -89,7 +89,9 @@ export function normalizeAssetId(asset: string): string {
   const mapping: Record<string, string> = {
     btc: "bitcoin",
     eth: "ethereum",
+    ethereum: "ethereum",
     avax: "avalanche-2",
+    avalanche: "avalanche-2",
     usdc: "usd-coin",
     usdt: "tether",
     sol: "solana",
