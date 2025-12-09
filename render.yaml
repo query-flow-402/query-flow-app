@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: queryflow-api
+    runtime: node
+    plan: free
+    buildCommand: cd apps/api && pnpm install && pnpm build
+    startCommand: cd apps/api && pnpm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3001"
