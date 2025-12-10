@@ -29,13 +29,23 @@ const PORT = process.env.PORT || 3001;
 // =============================================================================
 
 app.use(helmet());
+
+// Dynamic CORS origin based on environment
+const corsOrigins: (string | RegExp)[] = [
+  "http://localhost:3000",
+  "https://queryflow.vercel.app",
+  "https://query-flow-app-web.vercel.app", // Actual deployed domain
+  /\.vercel\.app$/, // Allow all Vercel preview deployments
+];
+
+// Add custom CORS_ORIGIN from environment if set
+if (process.env.CORS_ORIGIN) {
+  corsOrigins.push(process.env.CORS_ORIGIN);
+}
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://queryflow.vercel.app",
-      /\.vercel\.app$/, // Allow all Vercel preview deployments
-    ],
+    origin: corsOrigins,
     credentials: true,
   })
 );
