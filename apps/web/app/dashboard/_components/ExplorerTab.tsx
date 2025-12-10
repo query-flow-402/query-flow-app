@@ -76,7 +76,7 @@ interface QueryResult {
 
 export function ExplorerTab() {
   const [selectedType, setSelectedType] = useState("market");
-  const [assets, setAssets] = useState("BTC, ETH");
+  const [assets, setAssets] = useState("BTC");
   const [timeframe, setTimeframe] = useState("24h");
   const [walletAddress, setWalletAddress] = useState("");
   const [status, setStatus] = useState<QueryStatus>("idle");
@@ -267,13 +267,24 @@ export function ExplorerTab() {
               <label className="block text-sm font-medium text-[#0A0A0A] mb-2">
                 Assets
               </label>
-              <input
-                type="text"
+              <select
                 value={assets}
                 onChange={(e) => setAssets(e.target.value)}
-                placeholder="e.g., BTC, ETH, AVAX"
-                className="w-full px-4 py-3 border border-[#E5E5E5] rounded-lg focus:outline-none focus:border-[#14B8A6] font-mono text-sm text-[#0A0A0A] bg-white"
-              />
+                className="w-full px-4 py-3 border border-[#E5E5E5] rounded-lg focus:outline-none focus:border-[#14B8A6] text-sm text-[#0A0A0A] bg-white"
+              >
+                <option value="BTC">Bitcoin (BTC)</option>
+                <option value="ETH">Ethereum (ETH)</option>
+                <option value="AVAX">Avalanche (AVAX)</option>
+                <option value="SOL">Solana (SOL)</option>
+                <option value="BNB">Binance Coin (BNB)</option>
+                <option value="XRP">Ripple (XRP)</option>
+                <option value="ADA">Cardano (ADA)</option>
+                <option value="DOGE">Dogecoin (DOGE)</option>
+                <option value="DOT">Polkadot (DOT)</option>
+                <option value="MATIC">Polygon (MATIC)</option>
+                <option value="BTC, ETH">BTC + ETH</option>
+                <option value="BTC, ETH, AVAX">BTC + ETH + AVAX</option>
+              </select>
             </div>
 
             <div>
