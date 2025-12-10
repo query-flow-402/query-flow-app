@@ -3,6 +3,8 @@
  * Fetches query history from backend API (which caches blockchain data)
  */
 
+import apiClient from "@/config/axios-config";
+
 // =============================================================================
 // TYPES
 // =============================================================================
@@ -44,8 +46,6 @@ interface APIHistoryResponse {
 // CONSTANTS
 // =============================================================================
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
 const TYPE_MAP: Record<string, "market" | "price" | "risk" | "social"> = {
   market: "market",
   price: "price",
@@ -72,8 +72,9 @@ export async function fetchUserQueryHistory(
   try {
     console.log(`📜 Fetching query history for: ${userAddress}`);
 
-    const response = await fetch(`${API_URL}/api/v1/history/${userAddress}`);
-    const data: APIHistoryResponse = await response.json();
+    const { data } = await apiClient.get<APIHistoryResponse>(
+      `/api/v1/history/${userAddress}`
+    );
 
     if (!data.success || !data.data) {
       console.warn("⚠️ History API returned error:", data.error);
@@ -121,13 +122,9 @@ export async function refreshUserQueryHistory(
   try {
     console.log(`🔄 Refreshing query history for: ${userAddress}`);
 
-    const response = await fetch(
-      `${API_URL}/api/v1/history/refresh/${userAddress}`,
-      {
-        method: "POST",
-      }
+    const { data } = await apiClient.post<APIHistoryResponse>(
+      `/api/v1/history/refresh/${userAddress}`
     );
-    const data: APIHistoryResponse = await response.json();
 
     if (!data.success || !data.data) {
       console.warn("⚠️ History refresh API returned error:", data.error);

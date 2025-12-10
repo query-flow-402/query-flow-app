@@ -9,6 +9,7 @@ import {
   Zap,
   RefreshCw,
 } from "lucide-react";
+import apiClient from "@/config/axios-config";
 
 // =============================================================================
 // TYPES (matching backend analytics types)
@@ -64,7 +65,6 @@ interface ProviderHealth {
 // CONSTANTS
 // =============================================================================
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 const REFRESH_INTERVAL_MS = 10000; // 10 seconds
 
 const typeColors: Record<string, string> = {
@@ -103,8 +103,7 @@ export function NetworkTab() {
   // Fetch network stats
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/v1/analytics/network/stats`);
-      const data = await res.json();
+      const { data } = await apiClient.get("/api/v1/analytics/network/stats");
       if (data.success) {
         setStats(data.data);
       }
@@ -116,10 +115,9 @@ export function NetworkTab() {
   // Fetch live feed
   const fetchFeed = useCallback(async () => {
     try {
-      const res = await fetch(
-        `${API_BASE}/api/v1/analytics/network/feed?limit=20`
-      );
-      const data = await res.json();
+      const { data } = await apiClient.get("/api/v1/analytics/network/feed", {
+        params: { limit: 20 },
+      });
       if (data.success) {
         setFeed(data.data.queries);
       }
@@ -131,10 +129,9 @@ export function NetworkTab() {
   // Fetch provider health
   const fetchProviders = useCallback(async () => {
     try {
-      const res = await fetch(
-        `${API_BASE}/api/v1/analytics/network/data-sources`
+      const { data } = await apiClient.get(
+        "/api/v1/analytics/network/data-sources"
       );
-      const data = await res.json();
       if (data.success) {
         setProviders(data.data.providers);
         setDistribution(data.data.distribution);

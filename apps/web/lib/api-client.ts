@@ -7,9 +7,8 @@ import type { Account } from "thirdweb/wallets";
 import { prepareTransaction, sendTransaction, waitForReceipt } from "thirdweb";
 import { client, defaultChain } from "./thirdweb";
 import { parseEther } from "viem";
-
-// API Base URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+import apiClient from "@/config/axios-config";
+import { AxiosError } from "axios";
 
 // =============================================================================
 // TYPES
@@ -141,32 +140,31 @@ export async function fetchWithPayment<T>(
   account: Account,
   onStatus?: PaymentStatusCallback
 ): Promise<QueryResult<T>> {
-  const url = `${API_URL}${endpoint}`;
-
   try {
     // Step 1: Initial request to get payment requirements
     onStatus?.({ stage: "requesting", message: "Getting price quote..." });
 
-    const initialResponse = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    let paymentRequired: { payment: RealPaymentRequirement } | null = null;
 
-    // If not 402, return the response directly
-    if (initialResponse.status !== 402) {
-      const result = await initialResponse.json();
-      if (result.success) {
+    try {
+      const { data } = await apiClient.post<QueryResult<T>>(endpoint, payload);
+      // If no 402 error, return the response directly
+      if (data.success) {
         onStatus?.({ stage: "complete", message: "Query complete!" });
       }
-      return result;
+      return data;
+    } catch (err) {
+      const axiosError = err as AxiosError<{ payment: RealPaymentRequirement }>;
+      if (axiosError.response?.status !== 402) {
+        throw err;
+      }
+      paymentRequired = axiosError.response.data;
     }
 
     // Step 2: Extract payment requirements
-    const paymentRequired = await initialResponse.json();
     console.log("402 Response:", paymentRequired);
 
-    const payment = paymentRequired.payment as RealPaymentRequirement;
+    const payment = paymentRequired?.payment;
 
     if (!payment || !payment.priceAvax || !payment.paymentAddress) {
       const errorMsg = "Server returned invalid payment requirements";
@@ -240,16 +238,15 @@ export async function fetchWithPayment<T>(
       payer: account.address,
     };
 
-    const paidResponse = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-402-payment": encodePaymentHeader(paymentHeader),
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const finalResult = await paidResponse.json();
+    const { data: finalResult } = await apiClient.post<QueryResult<T>>(
+      endpoint,
+      payload,
+      {
+        headers: {
+          "x-402-payment": encodePaymentHeader(paymentHeader),
+        },
+      }
+    );
 
     if (finalResult.success) {
       onStatus?.({ stage: "complete", message: "Query complete!", txHash });
