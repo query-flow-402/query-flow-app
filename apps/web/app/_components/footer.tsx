@@ -5,7 +5,10 @@ const footerLinks = {
   product: [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Pricing", href: "#pricing" },
-    { label: "Documentation", href: "#docs" },
+    {
+      label: "Documentation",
+      href: "https://www.npmjs.com/package/@queryflow-402/sdk",
+    },
     { label: "API Status", href: "#" },
   ],
   resources: [

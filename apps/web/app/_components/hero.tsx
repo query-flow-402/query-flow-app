@@ -47,13 +47,18 @@ export function Hero() {
                   className="transition-transform group-hover:translate-x-1"
                 />
               </button>
-              <button className="btn-secondary text-base group">
+              <a
+                href="https://www.npmjs.com/package/@queryflow-402/sdk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary text-base group"
+              >
                 View Documentation
                 <ExternalLink
                   size={18}
                   className="transition-transform group-hover:scale-110"
                 />
-              </button>
+              </a>
             </div>
 
             {/* Stats Row */}

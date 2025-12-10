@@ -1,19 +1,21 @@
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Package } from "lucide-react";
 import { useState } from "react";
 
-const codeExample = `import { QueryFlowClient } from "@queryflow/sdk";
+const codeExample = `import { QueryFlowClient } from "@queryflow-402/sdk";
 
-// Initialize with your private key (no API Key needed!)
-const client = new QueryFlowClient(process.env.PRIVATE_KEY);
+// Initialize with your private key and enable real payments
+const client = new QueryFlowClient(process.env.PRIVATE_KEY, {
+  mode: "tx" // Enables real AVAX transactions
+});
 
-// Get AI-powered market insights
+// Get AI-powered market insights (~$0.02 in AVAX)
 const result = await client.market({
   assets: ["BTC", "ETH"],
   timeframe: "24h"
 });
 
 console.log(result.sentiment);
-// Output: { score: 72, trend: "bullish", summary: "..." }`;
+// Output: { score: 75, trend: "bullish", summary: "..." }`;
 
 export function IntegrationCode() {
   const [copied, setCopied] = useState(false);
@@ -25,7 +27,7 @@ export function IntegrationCode() {
   };
 
   return (
-    <section className="section-alt py-32">
+    <section id="sdk" className="section-alt py-32">
       <div className="mx-auto px-6 md:px-8" style={{ maxWidth: "1280px" }}>
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -40,12 +42,33 @@ export function IntegrationCode() {
             Simple Integration
           </h2>
           <p
-            className="text-[#4A4A4A] mx-auto"
+            className="text-[#4A4A4A] mx-auto mb-6"
             style={{ maxWidth: "600px", fontSize: "1.125rem", lineHeight: 1.6 }}
           >
             Add pay-per-query data to your AI agent in minutes. Use our official
             SDK or raw HTTP requests.
           </p>
+
+          {/* NPM Package Button */}
+          <a
+            href="https://www.npmjs.com/package/@queryflow-402/sdk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#CB3837] hover:bg-[#A52F2E] text-white font-medium rounded-lg transition-colors"
+          >
+            <Package size={20} />
+            View on NPM
+          </a>
+        </div>
+
+        {/* Install Command */}
+        <div
+          className="flex items-center justify-center gap-4 mb-8 mx-auto"
+          style={{ maxWidth: "500px" }}
+        >
+          <code className="flex-1 bg-[#F5F5F5] border border-[#E0E0E0] rounded-lg px-4 py-3 font-mono text-sm text-[#333]">
+            npm install @queryflow-402/sdk
+          </code>
         </div>
 
         {/* Code Block */}
@@ -91,19 +114,13 @@ export function IntegrationCode() {
           </div>
           <div className="text-center">
             <p className="font-semibold text-[#0A0A0A] mb-1">
-              Raw HTTP Support
+              Real AVAX Payments
             </p>
-            <p className="text-sm text-[#6A6A6A]">
-              Compatible with any language
-            </p>
+            <p className="text-sm text-[#6A6A6A]">No API keys, pay per query</p>
           </div>
           <div className="text-center">
-            <p className="font-semibold text-[#0A0A0A] mb-1">
-              Real-time Pricing
-            </p>
-            <p className="text-sm text-[#6A6A6A]">
-              Pay only for what you query
-            </p>
+            <p className="font-semibold text-[#0A0A0A] mb-1">SSE Streaming</p>
+            <p className="text-sm text-[#6A6A6A]">Real-time AI responses</p>
           </div>
         </div>
       </div>
