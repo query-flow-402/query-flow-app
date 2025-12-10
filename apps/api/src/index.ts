@@ -31,6 +31,7 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 
 // Dynamic CORS origin based on environment
+/*
 const corsOrigins: (string | RegExp)[] = [
   "http://localhost:3000",
   "https://queryflow.vercel.app",
@@ -42,13 +43,33 @@ const corsOrigins: (string | RegExp)[] = [
 if (process.env.CORS_ORIGIN) {
   corsOrigins.push(process.env.CORS_ORIGIN);
 }
+*/
 
+// CORS handled by Nginx proxy - DISABLE IN BACKEND
+/*
 app.use(
   cors({
     origin: corsOrigins,
     credentials: true,
   })
 );
+*/
+
+// CORS preflight - DISABLE
+/*
+// Preflight handler for all routes
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Wallet-Address');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    return res.sendStatus(200);
+  }
+  next();
+});
+*/
+
 app.use(express.json());
 
 // Request logging
