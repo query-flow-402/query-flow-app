@@ -48,7 +48,7 @@ export function Hero() {
                 />
               </button>
               <a
-                href="https://www.npmjs.com/package/@queryflow-402/sdk"
+                href="/docs/index.html"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-secondary text-base group"

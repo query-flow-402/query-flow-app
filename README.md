@@ -17,6 +17,7 @@
 </p>
 
 <p align="center">
+  <a href="https://query-flow-app-web.vercel.app/docs/index.html">Docs</a> •
   <a href="#how-it-works">How it Works</a> •
   <a href="#features">Features</a> •
   <a href="#sdk">SDK</a> •
@@ -171,7 +172,7 @@ console.log(sentiment.txHash); // 0x... (Proof of Payment)
 
 ## Links
 
-📖 [NPM Package](https://www.npmjs.com/package/@queryflow-402/sdk) · 💬 [Discord](https://discord.gg/queryflow) · 🐦 [Twitter](https://twitter.com/queryflow)
+📖 [NPM Package](https://www.npmjs.com/package/@queryflow-402/sdk) · 📚 [Documentation](https://query-flow-app-web.vercel.app/docs/index.html) · 💬 [Discord](https://discord.gg/queryflow) · 🐦 [Twitter](https://twitter.com/queryflow)
 
 ---
 

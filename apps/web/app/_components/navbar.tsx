@@ -19,8 +19,8 @@ export function Navbar() {
   const navLinks = [
     { label: "Product", href: "#product" },
     { label: "Pricing", href: "#pricing" },
-    { label: "Docs", href: "#docs" },
-    { label: "GitHub", href: "https://github.com" },
+    { label: "Docs", href: "/docs/index.html" },
+    { label: "GitHub", href: "https://github.com/dpv-402" },
   ];
 
   return (

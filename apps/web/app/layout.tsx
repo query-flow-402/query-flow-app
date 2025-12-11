@@ -25,18 +25,30 @@ export const metadata: Metadata = {
     "data insights",
     "crypto API",
   ],
+  icons: {
+    icon: "/icon.png",
+  },
   openGraph: {
     title: "QueryFlow | Pay-Per-Query Data Insights for AI Agents",
     description:
-      "AI agents pay for data in real-time using blockchain settlements. No subscriptions, no accounts.",
+      "No subscriptions. No API keys. AI agents pay for data in real-time using AVAX blockchain settlements. Powered by x402 protocol.",
     type: "website",
     siteName: "QueryFlow",
+    images: [
+      {
+        url: "/icon.png",
+        width: 512,
+        height: 512,
+        alt: "QueryFlow Logo",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "QueryFlow | Pay-Per-Query Data Insights for AI Agents",
     description:
-      "AI agents pay for data in real-time using blockchain settlements. No subscriptions, no accounts.",
+      "No subscriptions. No API keys. AI agents pay for data in real-time using AVAX blockchain settlements.",
+    images: ["/icon.png"],
   },
 };
 
