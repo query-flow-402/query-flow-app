@@ -503,6 +503,8 @@ function SocialResultDisplay({ result }: { result: SocialResult }) {
 // =============================================================================
 
 export function QueryResultDisplay({ type, result }: QueryResultDisplayProps) {
+  if (!result) return null;
+
   switch (type) {
     case "market":
       return <MarketResultDisplay result={result as MarketResult} />;
